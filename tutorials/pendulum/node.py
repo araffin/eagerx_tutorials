@@ -26,39 +26,37 @@ class MovingAverageFilter(eagerx.Node):
         spec.initialize(MovingAverageFilter)
 
         # Modify default node params
-        spec.config.name = name
-        spec.config.rate = rate
-        spec.config.process = eagerx.process.ENVIRONMENT
-        spec.config.inputs = ["signal"]
-        spec.config.outputs = ["filtered"]
+        spec.config.update(name=name, rate=rate, process=eagerx.process.ENVIRONMENT, inputs=["signal"], outputs=["filtered"])
         
         # Custom node params
-        # START ASSIGNMENT 1.1
-
-        # START ASSIGNMENT 1.1
+        # START EXERCISE 1.1
+        spec.config.update(n=n)
+        # START EXERCISE 1.1
         
         # Add space converters
         spec.inputs.signal.space_converter = eagerx.SpaceConverter.make("Space_Float32", -3, 3, dtype="float32")
         spec.outputs.filtered.space_converter = eagerx.SpaceConverter.make("Space_Float32MultiArray", [-3], [3], dtype="float32")
     
-    # START ASSIGNMENT 1.2
-    def initialize(self):
-        pass
-    # END ASSIGNMENT 1.2
+    # START EXERCISE 1.2
+    def initialize(self, n):
+        self.n = n
+        self.moving_average = 0.0
+    # END EXERCISE 1.2
     
     @eagerx.register.states()
     def reset(self):
-        # START ASSIGNMENT 1.3
-        pass
-        # END ASSIGNMENT 1.3
+        # START EXERCISE 1.3
+        self.moving_average = 0.0
+        # END EXERCISE 1.3
 
     @eagerx.register.inputs(signal=Float32)
     @eagerx.register.outputs(filtered=Float32MultiArray)
     def callback(self, t_n: float, signal: Msg):
         data = signal.msgs[-1].data
         
-        # START ASSIGNMENT 1.4
-        filtered_data = data
-        # END ASSIGNMENT 1.4
+        # START EXERCISE 1.4
+        self.moving_average = ((self.n - 1) * self.moving_average + data)/ self.n
+        filtered_data = self.moving_average
+        # END EXERCISE 1.4
         
         return dict(filtered=Float32MultiArray(data=[filtered_data]))
